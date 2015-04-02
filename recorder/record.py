@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+
 import blessings
 import subprocess
 import signal
 import time
 import sys
 import os
+import pyperclip
 
 t = blessings.Terminal()
 print "ADB Recorder v0.1"
@@ -12,7 +15,7 @@ print t.green("Starting recording on device...")
 recorder = subprocess.Popen(["adb", "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
 try:
     while recorder.poll() is None:    
-        pass
+        time.sleep(0.2)
 except KeyboardInterrupt:
     pass
 
@@ -33,7 +36,7 @@ except subprocess.CalledProcessError:
     sys.exit(-1)
 
 print t.green("Converting video to GIF...")
-FFMPEG_FILTERS = "fps=15,scale=320:-1:flags=lanczos"
+FFMPEG_FILTERS = "fps=15,scale=480:-1:flags=lanczos"
 FFMPEG_PALLETE = ["ffmpeg", "-v", "warning", "-i", "tmp_record.mp4", "-vf", FFMPEG_FILTERS + ",palettegen", "-y", "tmp_palette.png"]
 FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", "tmp_record.mp4", "-i", "tmp_palette.png", "-lavfi", FFMPEG_FILTERS + "[x];[x][1:v]paletteuse=dither=floyd_steinberg", "-y", "video.gif"]
 
@@ -48,5 +51,6 @@ finally:
     os.remove("tmp_palette.png")
     os.remove("tmp_record.mp4")
 
-
+pyperclip.copy("file://" + unicode(os.path.abspath("./video.gif")))
+print t.yellow("Path to GIF was copied to clipboard.")
 

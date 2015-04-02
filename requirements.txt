@@ -1,1 +1,2 @@
 blessings==1.6
+pyperclip==1.5.9
