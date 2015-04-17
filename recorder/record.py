@@ -9,8 +9,39 @@ import os
 import pyperclip
 
 t = blessings.Terminal()
+
+def which(program):
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+def check_requirements():
+    if which("adb") is None:
+        print t.red("This program requires adb executable to be in path.")
+        sys.exit(-3)
+    if which("ffmpeg") is None:
+        print t.red("This program requires ffmpeg in path.")
+        sys.exit(-4)
+
+
 print "ADB Recorder v0.1"
+check_requirements()
+
 print t.green("Starting recording on device...")
+print t.yellow("Press Ctrl+C to stop recording.")
 
 recorder = subprocess.Popen(["adb", "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
 try:
