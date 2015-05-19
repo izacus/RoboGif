@@ -8,6 +8,8 @@ import sys
 import os
 import pyperclip
 
+from adb import get_devices
+
 t = blessings.Terminal()
 
 def which(program):
@@ -36,14 +38,42 @@ def check_requirements():
         print t.red("This program requires ffmpeg in path.")
         sys.exit(-4)
 
+def get_chosen_device(devices):
+    print t.green("Multiple devices found, choose one: ")
+    num = 0;
+    entry_dict = {}
+    print "==============="
+    for device_id in devices:
+        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"], device_id=device_id)
+        entry_dict[num] = device_id
+        num += 1
+    print "==============="
+    entry = -1
+    while not entry in entry_dict:
+        inp = raw_input(t.green(" Choose[0-%d]: " % (num - 1, )))
+        try:
+            entry = int(inp.strip())
+        except ValueError:
+            entry = -1    
+
+    return entry_dict[entry]
+
 
 print "ADB Recorder v0.1"
 check_requirements()
 
-print t.green("Starting recording on device...")
+# Show device chooser if more than one device is selected
+device_id = None
+devices = get_devices()
+if len(devices) == 1:
+    device_id = devices.keys()[0]
+else:
+    device_id = get_chosen_device(devices)
+
+print t.green("Starting recording on %s..." % (device_id, ))
 print t.yellow("Press Ctrl+C to stop recording.")
 
-recorder = subprocess.Popen(["adb", "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
+recorder = subprocess.Popen(["adb", "-s", device_id, "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
 try:
     while recorder.poll() is None:    
         time.sleep(0.2)
@@ -60,8 +90,8 @@ time.sleep(2)
 
 # Download file and cleanup
 try:
-    subprocess.check_call(["adb", "pull", "/sdcard/tmp_record.mp4", "./tmp_record.mp4"])
-    subprocess.check_call(["adb", "shell", "rm", "/sdcard/tmp_record.mp4"])
+    subprocess.check_call(["adb", "-s", device_id, "pull", "/sdcard/tmp_record.mp4", "./tmp_record.mp4"])
+    subprocess.check_call(["adb", "-s", device_id, "shell", "rm", "/sdcard/tmp_record.mp4"])
 except subprocess.CalledProcessError:
     print t.red("Could not download recording from the device.");
     sys.exit(-1)
