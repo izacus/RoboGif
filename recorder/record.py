@@ -70,7 +70,7 @@ def create_optimized_gif(in_file, out_file):
     print t.green("Converting video to GIF...")
     tmp_pal_file = get_new_temp_file_path("png")
 
-    FFMPEG_FILTERS = "fps=15,scale=if(gt(iw,ih),480,-1):if(gt(iw,ih),-1,480):flags=lanczos"
+    FFMPEG_FILTERS = "fps=15,scale=w='if(gt(iw,ih),-1,480)':h='if(gt(iw,ih),480,-1)':flags=lanczos"
     FFMPEG_PALLETE = ["ffmpeg", "-v", "warning", "-i", in_file, "-vf", FFMPEG_FILTERS + ",palettegen", "-y", tmp_pal_file]
     FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-i", tmp_pal_file, "-lavfi", FFMPEG_FILTERS + "[x];[x][1:v]paletteuse=dither=floyd_steinberg", "-y", "-f", "gif", out_file]
 
@@ -82,7 +82,9 @@ def create_optimized_gif(in_file, out_file):
         print t.red("Could not convert downloaded recording to GIF!")
         raise
     finally:
-        os.remove(tmp_pal_file)
+        try:
+            os.remove(tmp_pal_file)
+        except: pass
 
     pyperclip.copy("file://" + unicode(os.path.abspath(out_file)))
     print t.yellow("Path to GIF was copied to clipboard.")
