@@ -10,7 +10,7 @@ import pyperclip
 import tempfile
 import argparse
 
-from robo_gif.adb import get_devices
+from robogif.adb import get_devices
 
 t = blessings.Terminal()
 
