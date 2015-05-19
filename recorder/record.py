@@ -8,6 +8,7 @@ import sys
 import os
 import pyperclip
 import tempfile
+import argparse
 
 from adb import get_devices
 
@@ -66,6 +67,22 @@ def get_chosen_device(devices):
     print t.normal
     return entry_dict[entry]
 
+def create_optimized_video(in_file, out_file):
+    print t.green("Optimizing video...")
+    tmp_pal_file = get_new_temp_file_path("png")
+
+    FFMPEG_FILTERS = "format=pix_fmts=yuv420p,fps=60,scale=w='if(gt(iw,ih),-2,480)':h='if(gt(iw,ih),480,-2)':flags=lanczos"
+    FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-codec:v", "libx264", "-preset", "slow", "-crf", "24", "-vf", FFMPEG_FILTERS, "-y", "-f", "mp4", out_file]
+
+    try:
+        subprocess.check_call(FFMPEG_CONVERT)
+        print t.green("Done!")
+    except:
+        print t.red("Could not optimize downloaded recording!")
+        raise
+
+    print t.yellow("Created " + output_file_name)
+
 def create_optimized_gif(in_file, out_file):
     print t.green("Converting video to GIF...")
     tmp_pal_file = get_new_temp_file_path("png")
@@ -86,13 +103,27 @@ def create_optimized_gif(in_file, out_file):
             os.remove(tmp_pal_file)
         except: pass
 
-    pyperclip.copy("file://" + unicode(os.path.abspath(out_file)))
-    print t.yellow("Path to GIF was copied to clipboard.")
+    print t.yellow("Created " + output_file_name)
 
 if __name__ == "__main__":
-
     print "ADB Recorder v0.1"
     check_requirements()
+
+    if len(sys.argv) < 2 or len(sys.argv) > 2:
+        print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
+        print
+        sys.exit(-4)
+
+    output_file_name = sys.argv[1]
+    output_video_mode = False
+
+    if not (output_file_name.lower().endswith(".mp4") or output_file_name.lower().endswith(".gif")):
+        print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
+        print "Filename must either end with mp4 for video or gif for a GIF"
+        print
+        sys.exit(-4)
+
+    if output_file_name.lower().endswith(".mp4"): output_video_mode = True
 
     # Show device chooser if more than one device is selected
     device_id = None
@@ -135,7 +166,10 @@ if __name__ == "__main__":
         subprocess.check_call(["adb", "-s", device_id, "pull", "/sdcard/tmp_record.mp4", tmp_video_file])
         subprocess.check_call(["adb", "-s", device_id, "shell", "rm", "/sdcard/tmp_record.mp4"])
 
-        create_optimized_gif(tmp_video_file, "video.gif")
+        if output_video_mode:
+            create_optimized_video(tmp_video_file, output_file_name)
+        else:    
+            create_optimized_gif(tmp_video_file, output_file_name)
 
     except subprocess.CalledProcessError:
         print t.red("Could not download recording from the device.");
