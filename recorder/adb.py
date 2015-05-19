@@ -25,5 +25,3 @@ def get_devices():
         break
 
     return devices
-
-print get_devices()        
