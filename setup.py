@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='robogif',
-      version='1.0',
+      version='1.0.1',
       description='Simple Android screen recorder',
       long_description='RoboGif allows you to simply record the screen of your 4.4+ Android device and then convert the recording to high-quality GIF or video.\n Requires adb and ffmpeg to be installed on the system.',
       author='Jernej Virag',
@@ -11,6 +11,8 @@ setup(name='robogif',
       author_email='jernej@virag.si',
       packages=['robogif'],
       scripts=['script/robogif'],
+      install_requires=['blessings'],
+      url="https://github.com/izacus/RoboGif",
       classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: Microsoft :: Windows",
