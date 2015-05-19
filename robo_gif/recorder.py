@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import blessings
 import subprocess
@@ -10,7 +10,7 @@ import pyperclip
 import tempfile
 import argparse
 
-from adb import get_devices
+from robo_gif.adb import get_devices
 
 t = blessings.Terminal()
 
@@ -105,7 +105,7 @@ def create_optimized_gif(in_file, out_file):
 
     print t.yellow("Created " + output_file_name)
 
-if __name__ == "__main__":
+def run(arguments):
     print "ADB Recorder v0.1"
     check_requirements()
 
@@ -128,7 +128,10 @@ if __name__ == "__main__":
     # Show device chooser if more than one device is selected
     device_id = None
     devices = get_devices()
-    if len(devices) == 1:
+    if len(devices) == 0:
+        print t.red("No adb devices found, connect one.")
+        sys.exit(-3)
+    elif len(devices) == 1:
         device_id = devices.keys()[0]
     else:
         device_id = get_chosen_device(devices)
@@ -176,3 +179,6 @@ if __name__ == "__main__":
         sys.exit(-1)
     finally:
         os.remove(tmp_video_file)
+
+if __name__ == "__main__":
+    run(sys.argv)
