@@ -81,7 +81,7 @@ def create_optimized_video(in_file, out_file):
         print t.red("Could not optimize downloaded recording!")
         raise
 
-    print t.yellow("Created " + output_file_name)
+    print t.yellow("Created " + out_file)
 
 def create_optimized_gif(in_file, out_file):
     print t.green("Converting video to GIF...")
@@ -103,10 +103,10 @@ def create_optimized_gif(in_file, out_file):
             os.remove(tmp_pal_file)
         except: pass
 
-    print t.yellow("Created " + output_file_name)
+    print t.yellow("Created " + out_file)
 
 def run(arguments):
-    print "ADB Recorder v0.1"
+    print "RoboGif Recorder v1.0"
     check_requirements()
 
     if len(sys.argv) < 2 or len(sys.argv) > 2:

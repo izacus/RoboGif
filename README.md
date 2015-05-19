@@ -11,11 +11,28 @@ A small utility to record Android device screen to an optimized GIF so you can p
 ## Installation
 
 ```
-pip install -r requirements.txt
+pip install robogif
 ```
 
 ## Usage
 
+To record a gif:
+
 ```
-python record.py
+robogif mygif.gif
+
+RoboGif Recorder v1.0
+Starting recording on device...
+Press Ctrl+C to stop recording.
+Recording done, downloading file....
+Converting video to GIF...
+Done!
+Created mygif.gif
+
+```
+
+or to record a video:
+
+```
+robogif myvideo.mp4
 ```
