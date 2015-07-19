@@ -45,11 +45,10 @@ def get_chosen_device(devices):
     return entry_dict[entry]
 
 
-def create_optimized_video(in_file, out_file):
+def create_optimized_video(in_file, out_file, size, fps):
     print t.green("Optimizing video...")
-    tmp_pal_file = get_new_temp_file_path("png")
 
-    FFMPEG_FILTERS = "format=pix_fmts=yuv420p,fps=60,scale=w='if(gt(iw,ih),-2,480)':h='if(gt(iw,ih),480,-2)':flags=lanczos"
+    FFMPEG_FILTERS = "format=pix_fmts=yuv420p,fps={fps},scale=w='if(gt(iw,ih),-2,{size})':h='if(gt(iw,ih),{size},-2)':flags=lanczos".format(fps=fps, size=size)
     FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-codec:v", "libx264", "-preset", "slow", "-crf", "24", "-vf", FFMPEG_FILTERS, "-y", "-f", "mp4", out_file]
 
     try:
@@ -62,11 +61,11 @@ def create_optimized_video(in_file, out_file):
     print t.yellow("Created " + out_file)
 
 
-def create_optimized_gif(in_file, out_file):
+def create_optimized_gif(in_file, out_file, size, fps):
     print t.green("Converting video to GIF...")
     tmp_pal_file = get_new_temp_file_path("png")
 
-    FFMPEG_FILTERS = "fps=15,scale=w='if(gt(iw,ih),-1,480)':h='if(gt(iw,ih),480,-1)':flags=lanczos"
+    FFMPEG_FILTERS = "fps={fps},scale=w='if(gt(iw,ih),-1,{size})':h='if(gt(iw,ih),{size},-1)':flags=lanczos".format(fps=fps, size=size)
     FFMPEG_PALLETE = ["ffmpeg", "-v", "warning", "-i", in_file, "-vf", FFMPEG_FILTERS + ",palettegen", "-y", tmp_pal_file]
     FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-i", tmp_pal_file, "-lavfi", FFMPEG_FILTERS + "[x];[x][1:v]paletteuse=dither=floyd_steinberg", "-y", "-f", "gif", out_file]
 
@@ -87,9 +86,11 @@ def create_optimized_gif(in_file, out_file):
 
 @click.command(options_metavar="[options]")
 @click.argument("filename", type=click.Path(exists=False, writable=True, resolve_path=True), metavar="<filename>.<gif|mp4>")
-@click.version_option(version="1.1", prog_name="RoboGif")
+@click.option('-s', '--size', type=int, default=480, help="Size of the shortest side of the output gif/video. Defaults to 480.")
+@click.option('-f', '--fps', type=int, help="Framerate of the output gif/video. Defaults to 15 for GIF and 60 for MP4.")
 @click.help_option()
-def run(output_file_name):
+@click.version_option(version="1.1", prog_name="RoboGif")
+def run(filename=None, size=None, fps=None):
     """
     Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
     """
@@ -98,13 +99,20 @@ def run(output_file_name):
     check_requirements()
     output_video_mode = False
 
-    if not (output_file_name.lower().endswith(".mp4") or output_file_name.lower().endswith(".gif")):
+    if not (filename.lower().endswith(".mp4") or filename.lower().endswith(".gif")):
         print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
         print "Filename must either end with mp4 for video or gif for a GIF"
         print
         sys.exit(-4)
 
-    if output_file_name.lower().endswith(".mp4"): output_video_mode = True
+    if filename.lower().endswith(".mp4"):
+        output_video_mode = True
+
+    if fps is None:
+        if output_video_mode:
+            fps = 60
+        else:
+            fps = 15
 
     # Show device chooser if more than one device is selected
     device_id = None
@@ -151,9 +159,9 @@ def run(output_file_name):
         subprocess.check_call(["adb", "-s", device_id, "shell", "rm", "/sdcard/tmp_record.mp4"])
 
         if output_video_mode:
-            create_optimized_video(tmp_video_file, output_file_name)
+            create_optimized_video(tmp_video_file, filename, size, fps)
         else:    
-            create_optimized_gif(tmp_video_file, output_file_name)
+            create_optimized_gif(tmp_video_file, filename, size, fps)
 
     except subprocess.CalledProcessError:
         print t.red("Could not download recording from the device.");
