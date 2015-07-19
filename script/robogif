@@ -1,5 +1,0 @@
-#!/usr/bin/env python2
-
-import sys
-import robogif
-robogif.run(sys.argv)

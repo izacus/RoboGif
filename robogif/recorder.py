@@ -11,6 +11,8 @@ from utilities import which
 from utilities import get_new_temp_file_path
 from adb import get_devices
 
+VERSION = "1.1"
+
 t = blessings.Terminal()
 
 
@@ -18,8 +20,29 @@ def check_requirements():
     if which("adb") is None:
         print t.red("This program requires adb executable to be in path.")
         sys.exit(-3)
-    if which("ffmpeg") is None:
+
+    ffmpeg_path = which("ffmpeg")
+    if ffmpeg_path is None:
         print t.red("This program requires ffmpeg in path.")
+        sys.exit(-4)
+
+    # Check if ffmpeg supports all capabilities we need
+    ffmpeg_p = subprocess.Popen(["ffmpeg", "-codecs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = ffmpeg_p.stdout.read()
+
+    if "gif" not in output:
+        print t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs.")
+        sys.exit(-4)
+
+    if "libx264" not in output:
+        print t.yellow("Missing libx264 encoder in your installed ffmpeg, will not be able to create videos.")
+
+    ffmpeg_p = subprocess.Popen(["ffmpeg", "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = ffmpeg_p.stdout.read()
+
+    if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output):
+        print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
+              t.green("format, scale, palettegen and paletteuse"), t.red("filters.")
         sys.exit(-4)
 
 
@@ -89,13 +112,13 @@ def create_optimized_gif(in_file, out_file, size, fps):
 @click.option('-s', '--size', type=int, default=480, help="Size of the shortest side of the output gif/video. Defaults to 480.")
 @click.option('-f', '--fps', type=int, help="Framerate of the output gif/video. Defaults to 15 for GIF and 60 for MP4.")
 @click.help_option()
-@click.version_option(version="1.1", prog_name="RoboGif")
+@click.version_option(version=VERSION, prog_name="RoboGif")
 def run(filename=None, size=None, fps=None):
     """
     Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
     """
 
-    print "RoboGif Recorder v1.0"
+    print "RoboGif Recorder v%s" % (VERSION,)
     check_requirements()
     output_video_mode = False
 
@@ -145,12 +168,10 @@ def run(filename=None, size=None, fps=None):
         print t.normal + "Genymotion and stock emulator do not support it."
         print 
         sys.exit(-3)
-
-    print t.green("Recording done, downloading file....")
-
     # We need to wait for MOOV item to be written
     time.sleep(2)
 
+    print t.green("Recording done, downloading file....")
     tmp_video_file = get_new_temp_file_path("mp4")
 
     # Download file and cleanup
