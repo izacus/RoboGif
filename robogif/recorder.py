@@ -10,8 +10,7 @@ import os
 from utilities import which
 from utilities import get_new_temp_file_path
 from adb import get_devices
-
-VERSION = "1.1"
+from version import VERSION
 
 t = blessings.Terminal()
 

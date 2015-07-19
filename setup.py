@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from robogif.recorder import VERSION
+from robogif.version import VERSION
 from distutils.core import setup
 
 setup(name='robogif',
