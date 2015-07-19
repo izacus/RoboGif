@@ -29,6 +29,11 @@ def check_requirements():
     # Check if ffmpeg supports all capabilities we need
     ffmpeg_p = subprocess.Popen(["ffmpeg", "-codecs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = ffmpeg_p.stdout.read()
+    ffmpeg_p.communicate()
+
+    if ffmpeg_p.returncode != 0:
+        print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+        sys.exit(-4)
 
     if "gif" not in output:
         print t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs.")
@@ -39,6 +44,10 @@ def check_requirements():
 
     ffmpeg_p = subprocess.Popen(["ffmpeg", "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = ffmpeg_p.stdout.read()
+    ffmpeg_p.communicate()
+    if ffmpeg_p.returncode != 0:
+        print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+        sys.exit(-4)
 
     if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output and "fps" in output):
         print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
