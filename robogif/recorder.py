@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import click
 import blessings
 import subprocess
 import signal
@@ -8,8 +9,7 @@ import sys
 import os
 from utilities import which
 from utilities import get_new_temp_file_path
-
-from robogif.adb import get_devices
+from adb import get_devices
 
 t = blessings.Terminal()
 
@@ -85,16 +85,17 @@ def create_optimized_gif(in_file, out_file):
     print t.yellow("Created " + out_file)
 
 
-def run(arguments):
+@click.command(options_metavar="[options]")
+@click.argument("filename", type=click.Path(exists=False, writable=True, resolve_path=True), metavar="<filename>.<gif|mp4>")
+@click.version_option(version="1.1", prog_name="RoboGif")
+@click.help_option()
+def run(output_file_name):
+    """
+    Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
+    """
+
     print "RoboGif Recorder v1.0"
     check_requirements()
-
-    if len(sys.argv) < 2 or len(sys.argv) > 2:
-        print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
-        print
-        sys.exit(-4)
-
-    output_file_name = sys.argv[1]
     output_video_mode = False
 
     if not (output_file_name.lower().endswith(".mp4") or output_file_name.lower().endswith(".gif")):
@@ -161,4 +162,4 @@ def run(arguments):
         os.remove(tmp_video_file)
 
 if __name__ == "__main__":
-    run(sys.argv)
+    run()
