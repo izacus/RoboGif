@@ -40,9 +40,9 @@ def check_requirements():
     ffmpeg_p = subprocess.Popen(["ffmpeg", "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = ffmpeg_p.stdout.read()
 
-    if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output):
+    if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output and "fps" in output):
         print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
-              t.green("format, scale, palettegen and paletteuse"), t.red("filters.")
+              t.green("format, fps, scale, palettegen and paletteuse"), t.red("filters.")
         sys.exit(-4)
 
 
