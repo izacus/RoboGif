@@ -27,31 +27,35 @@ def check_requirements():
         sys.exit(-4)
 
     # Check if ffmpeg supports all capabilities we need
-    ffmpeg_p = subprocess.Popen(["ffmpeg", "-codecs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = ffmpeg_p.stdout.read()
-    ffmpeg_p.communicate()
+    try:
+        ffmpeg_p = subprocess.Popen([ffmpeg_path, "-codecs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = ffmpeg_p.stdout.read()
+        ffmpeg_p.communicate()
 
-    if ffmpeg_p.returncode != 0:
-        print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
-        sys.exit(-4)
+        if ffmpeg_p.returncode != 0:
+            print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+            sys.exit(-4)
 
-    if "gif" not in output:
-        print t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs.")
-        sys.exit(-4)
+        if "gif" not in output:
+            print t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs.")
+            sys.exit(-4)
 
-    if "libx264" not in output:
-        print t.yellow("Missing libx264 encoder in your installed ffmpeg, will not be able to create videos.")
+        if "libx264" not in output:
+            print t.yellow("Missing libx264 encoder in your installed ffmpeg, will not be able to create videos.")
 
-    ffmpeg_p = subprocess.Popen(["ffmpeg", "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = ffmpeg_p.stdout.read()
-    ffmpeg_p.communicate()
-    if ffmpeg_p.returncode != 0:
-        print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
-        sys.exit(-4)
+        ffmpeg_p = subprocess.Popen([ffmpeg_path, "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = ffmpeg_p.stdout.read()
+        ffmpeg_p.communicate()
+        if ffmpeg_p.returncode != 0:
+            print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+            sys.exit(-4)
 
-    if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output and "fps" in output):
-        print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
-              t.green("format, fps, scale, palettegen and paletteuse"), t.red("filters.")
+        if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output and "fps" in output):
+            print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
+                  t.green("format, fps, scale, palettegen and paletteuse"), t.red("filters.")
+            sys.exit(-4)
+    except OSError:
+        print t.red("This program requires a newish ffmpeg in path.")
         sys.exit(-4)
 
 
