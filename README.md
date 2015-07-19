@@ -54,6 +54,10 @@ Done!
 Created demo.gif
 ```
 
+Example of a recorded GIF:
+
+![GIF example](izacus.github.io/RoboGif/images/demo.gif)
+
 or to record a video:
 
 ```
