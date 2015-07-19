@@ -6,37 +6,13 @@ import signal
 import time
 import sys
 import os
-import pyperclip
-import tempfile
-import argparse
+from utilities import which
+from utilities import get_new_temp_file_path
 
 from robogif.adb import get_devices
 
 t = blessings.Terminal()
 
-def which(program):
-    import os
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
-def get_new_temp_file_path(extension):
-    tmp_dir = tempfile._get_default_tempdir()
-    tmp_name = next(tempfile._get_candidate_names())
-    tmp_file = os.path.join(tmp_dir, tmp_name + "." + extension)
-    return tmp_file
 
 def check_requirements():
     if which("adb") is None:
@@ -45,6 +21,7 @@ def check_requirements():
     if which("ffmpeg") is None:
         print t.red("This program requires ffmpeg in path.")
         sys.exit(-4)
+
 
 def get_chosen_device(devices):
     print t.green("Multiple devices found, choose one: ")
@@ -67,6 +44,7 @@ def get_chosen_device(devices):
     print t.normal
     return entry_dict[entry]
 
+
 def create_optimized_video(in_file, out_file):
     print t.green("Optimizing video...")
     tmp_pal_file = get_new_temp_file_path("png")
@@ -82,6 +60,7 @@ def create_optimized_video(in_file, out_file):
         raise
 
     print t.yellow("Created " + out_file)
+
 
 def create_optimized_gif(in_file, out_file):
     print t.green("Converting video to GIF...")
@@ -104,6 +83,7 @@ def create_optimized_gif(in_file, out_file):
         except: pass
 
     print t.yellow("Created " + out_file)
+
 
 def run(arguments):
     print "RoboGif Recorder v1.0"
