@@ -137,7 +137,7 @@ def run(filename=None, size=None, fps=None):
 
     if not (filename.lower().endswith(".mp4") or filename.lower().endswith(".gif")):
         print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
-        print "Filename must either end with mp4 for video or gif for a GIF"
+        print t.red("Filename must either end with"), t.green("mp4"), t.red("for video or"), t.green("gif"), t.red("for a GIF.")
         print
         sys.exit(-4)
 
