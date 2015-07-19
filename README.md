@@ -42,20 +42,29 @@ pip install robogif
 To record a gif:
 
 ```
-robogif mygif.gif
+robogif demo.gif
 
-RoboGif Recorder v1.0
-Starting recording on device...
+RoboGif Recorder v1.1.2
+Starting recording on <serial>...
 Press Ctrl+C to stop recording.
 Recording done, downloading file....
+5679 KB/s (7036946 bytes in 1.209s)
 Converting video to GIF...
 Done!
-Created mygif.gif
-
+Created demo.gif
 ```
 
 or to record a video:
 
 ```
-robogif myvideo.mp4
+robogif demo.mp4
+
+RoboGif Recorder v1.1.2
+Starting recording on 061ffcff0b107aef...
+Press Ctrl+C to stop recording.
+Recording done, downloading file....
+7121 KB/s (1048401 bytes in 0.143s)
+Optimizing video...
+Done!
+Created demo.mp4
 ```
