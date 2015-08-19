@@ -64,7 +64,7 @@ def get_chosen_device(devices):
     entry_dict = {}
     print t.normal + "==============="
     for device_id in devices:
-        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"], device_id=device_id)
+        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"] if "model" in devices[device_id] else "(unknown)", device_id=device_id)    
         entry_dict[num] = device_id
         num += 1
     print t.normal + "==============="
