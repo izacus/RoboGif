@@ -80,11 +80,11 @@ def get_chosen_device(devices):
     return entry_dict[entry]
 
 
-def create_optimized_video(in_file, out_file, size, fps):
+def create_optimized_video(in_file, out_file, size, fps, video_quality):
     print t.green("Optimizing video...")
 
     FFMPEG_FILTERS = "format=pix_fmts=yuv420p,fps={fps},scale=w='if(gt(iw,ih),-2,{size})':h='if(gt(iw,ih),{size},-2)':flags=lanczos".format(fps=fps, size=size)
-    FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-codec:v", "libx264", "-preset", "slow", "-crf", "24", "-vf", FFMPEG_FILTERS, "-y", "-f", "mp4", out_file]
+    FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-codec:v", "libx264", "-preset", "slow", "-crf", str(video_quality), "-vf", FFMPEG_FILTERS, "-y", "-f", "mp4", out_file]
 
     try:
         subprocess.check_call(FFMPEG_CONVERT)
@@ -123,9 +123,10 @@ def create_optimized_gif(in_file, out_file, size, fps):
 @click.argument("filename", type=click.Path(exists=False, writable=True, resolve_path=True), metavar="<filename>.<gif|mp4>")
 @click.option('-s', '--size', type=int, default=480, help="Size of the shortest side of the output gif/video. Defaults to 480.")
 @click.option('-f', '--fps', type=int, help="Framerate of the output gif/video. Defaults to 15 for GIF and 60 for MP4.")
+@click.option('-vq', '--video-quality', type=int, default=24, help="Video quality of the output video - the value is x264 CRF. Default is 24, lower number means better quality.")
 @click.help_option()
 @click.version_option(version=VERSION, prog_name="RoboGif")
-def run(filename=None, size=None, fps=None):
+def run(filename=None, size=None, fps=None, video_quality=None):
     """
     Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
     """
@@ -192,7 +193,7 @@ def run(filename=None, size=None, fps=None):
         subprocess.check_call(["adb", "-s", device_id, "shell", "rm", "/sdcard/tmp_record.mp4"])
 
         if output_video_mode:
-            create_optimized_video(tmp_video_file, filename, size, fps)
+            create_optimized_video(tmp_video_file, filename, size, fps, video_quality)
         else:    
             create_optimized_gif(tmp_video_file, filename, size, fps)
 
