@@ -99,14 +99,25 @@ def create_optimized_video(in_file, out_file, size, fps, video_quality):
 def create_optimized_gif(in_file, out_file, size, fps):
     print t.green("Converting video to GIF...")
     tmp_pal_file = get_new_temp_file_path("png")
+    gifsicle_path = which("gifsicle")
+
+    if gifsicle_path is not None:
+        convert_output_path = get_new_temp_file_path("gif")
+    else:
+        convert_output_path = out_file
 
     FFMPEG_FILTERS = "fps={fps},scale=w='if(gt(iw,ih),-1,{size})':h='if(gt(iw,ih),{size},-1)':flags=lanczos".format(fps=fps, size=size)
     FFMPEG_PALLETE = ["ffmpeg", "-v", "warning", "-i", in_file, "-vf", FFMPEG_FILTERS + ",palettegen", "-y", tmp_pal_file]
-    FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-i", tmp_pal_file, "-lavfi", FFMPEG_FILTERS + "[x];[x][1:v]paletteuse=dither=floyd_steinberg", "-y", "-f", "gif", out_file]
+    FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-i", tmp_pal_file, "-lavfi", FFMPEG_FILTERS + "[x];[x][1:v]paletteuse=dither=floyd_steinberg", "-y", "-f", "gif", convert_output_path]
+    GIFSICLE_OPTIMIZE = ["gifsicle", "-O3", convert_output_path, "-o", out_file]
 
     try:
         subprocess.check_call(FFMPEG_PALLETE)
         subprocess.check_call(FFMPEG_CONVERT)
+
+        if gifsicle_path is not None:
+            subprocess.check_call(GIFSICLE_OPTIMIZE)
+
         print t.green("Done!")
     except:
         print t.red("Could not convert downloaded recording to GIF!")
@@ -114,6 +125,8 @@ def create_optimized_gif(in_file, out_file, size, fps):
     finally:
         try:
             os.remove(tmp_pal_file)
+            if gifsicle_path is not None:
+                os.remove(convert_output_path)
         except: pass
 
     print t.yellow("Created " + out_file)
