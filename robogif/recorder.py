@@ -9,10 +9,18 @@ import os
 import click
 import blessings
 
-from utilities import which
-from utilities import get_new_temp_file_path
-from adb import get_devices
-from version import VERSION
+try:
+    # Python 3
+    from .utilities import which
+    from .utilities import get_new_temp_file_path
+    from .adb import get_devices
+    from .version import VERSION
+except ValueError:
+    # Python 2
+    from utilities import which
+    from utilities import get_new_temp_file_path
+    from adb import get_devices
+    from version import VERSION
 
 t = blessings.Terminal()
 
