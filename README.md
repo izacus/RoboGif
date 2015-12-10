@@ -4,7 +4,7 @@ A small utility to record Android device screen to an optimized GIF so you can p
 
 ## Requirements
 
-* Python 2
+* Python 2.7 or 3.x
 * `adb` in path
 * `ffmpeg` in path (has to be decently new to support `palettegen` and `paletteuse` filters and have `libx264` if you want video output)
 
