@@ -1,16 +1,16 @@
 #!/usr/bin/env python2
-
-import click
-import blessings
 import subprocess
 import signal
 import time
 import sys
 import os
-from utilities import which
-from utilities import get_new_temp_file_path
-from adb import get_devices
-from version import VERSION
+import click
+import blessings
+
+from robogif.utilities import which
+from robogif.utilities import get_new_temp_file_path
+from robogif.adb import get_devices
+from robogif.version import VERSION
 
 t = blessings.Terminal()
 
@@ -60,21 +60,21 @@ def check_requirements():
 
 def get_chosen_device(devices):
     print t.green("Multiple devices found, choose one: ")
-    num = 0;
+    num = 0
     entry_dict = {}
     print t.normal + "==============="
     for device_id in devices:
-        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"] if "model" in devices[device_id] else "(unknown)", device_id=device_id)    
+        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"] if "model" in devices[device_id] else "(unknown)", device_id=device_id)
         entry_dict[num] = device_id
         num += 1
     print t.normal + "==============="
     entry = -1
-    while not entry in entry_dict:
+    while entry not in entry_dict:
         inp = raw_input(t.green(" Choose[0-%d]: " % (num - 1, )))
         try:
             entry = int(inp.strip())
         except ValueError:
-            entry = -1    
+            entry = -1
 
     print t.normal
     return entry_dict[entry]
@@ -127,7 +127,8 @@ def create_optimized_gif(in_file, out_file, size, fps):
             os.remove(tmp_pal_file)
             if gifsicle_path is not None:
                 os.remove(convert_output_path)
-        except: pass
+        except:
+            pass
 
     print t.yellow("Created " + out_file)
 
@@ -179,7 +180,7 @@ def run(filename=None, size=None, fps=None, video_quality=None):
 
     recorder = subprocess.Popen(["adb", "-s", device_id, "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
     try:
-        while recorder.poll() is None:    
+        while recorder.poll() is None:
             time.sleep(0.2)
     except KeyboardInterrupt:
         pass
@@ -188,11 +189,11 @@ def run(filename=None, size=None, fps=None, video_quality=None):
         recorder.send_signal(signal.SIGTERM)
         recorder.wait()
     except OSError:
-        print 
+        print
         print t.red("Recording has failed, it's possible that your device does not support recording.")
         print t.normal + "Recording is supported on devices running KitKat (4.4) or newer."
         print t.normal + "Genymotion and stock emulator do not support it."
-        print 
+        print
         sys.exit(-3)
     # We need to wait for MOOV item to be written
     time.sleep(2)
@@ -207,11 +208,11 @@ def run(filename=None, size=None, fps=None, video_quality=None):
 
         if output_video_mode:
             create_optimized_video(tmp_video_file, filename, size, fps, video_quality)
-        else:    
+        else:
             create_optimized_gif(tmp_video_file, filename, size, fps)
 
     except subprocess.CalledProcessError:
-        print t.red("Could not download recording from the device.");
+        print t.red("Could not download recording from the device.")
         sys.exit(-1)
     finally:
         os.remove(tmp_video_file)
