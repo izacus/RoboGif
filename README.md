@@ -8,6 +8,10 @@ A small utility to record Android device screen to an optimized GIF so you can p
 * `adb` in path
 * `ffmpeg` in path (has to be decently new to support `palettegen` and `paletteuse` filters and have `libx264` if you want video output)
 
+### Optional
+
+* `gifsicle` for further gif optimization
+
 #### Getting ffmpeg
 
 ##### OS X
