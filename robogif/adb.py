@@ -6,7 +6,7 @@ def get_devices():
 
     adb_proc = subprocess.Popen(['adb', 'devices', '-l'], stdout=subprocess.PIPE)
     while True:
-        line = adb_proc.stdout.readline().strip()
+        line = adb_proc.stdout.readline().strip().decode("utf-8")
         if line != '':
             #the real code does filtering here
             if line.startswith("List of"):

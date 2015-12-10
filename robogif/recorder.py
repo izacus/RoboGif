@@ -1,4 +1,6 @@
 #!/usr/bin/env python2
+from __future__ import print_function
+
 import subprocess
 import signal
 import time
@@ -7,97 +9,102 @@ import os
 import click
 import blessings
 
-from robogif.utilities import which
-from robogif.utilities import get_new_temp_file_path
-from robogif.adb import get_devices
-from robogif.version import VERSION
+from utilities import which
+from utilities import get_new_temp_file_path
+from adb import get_devices
+from version import VERSION
 
 t = blessings.Terminal()
 
 
 def check_requirements():
     if which("adb") is None:
-        print t.red("This program requires adb executable to be in path.")
+        print(t.red("This program requires adb executable to be in path."))
         sys.exit(-3)
 
     ffmpeg_path = which("ffmpeg")
     if ffmpeg_path is None:
-        print t.red("This program requires ffmpeg in path.")
+        print(t.red("This program requires ffmpeg in path."))
         sys.exit(-4)
 
     # Check if ffmpeg supports all capabilities we need
     try:
         ffmpeg_p = subprocess.Popen([ffmpeg_path, "-codecs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = ffmpeg_p.stdout.read()
+        output = ffmpeg_p.stdout.read().decode("utf-8")
         ffmpeg_p.communicate()
 
         if ffmpeg_p.returncode != 0:
-            print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+            print(t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg."))
             sys.exit(-4)
 
         if "gif" not in output:
-            print t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs.")
+            print(t.red("Missing GIF encoder in your installed ffmpeg, cannot create gifs."))
             sys.exit(-4)
 
         if "libx264" not in output:
-            print t.yellow("Missing libx264 encoder in your installed ffmpeg, will not be able to create videos.")
+            print(t.yellow("Missing libx264 encoder in your installed ffmpeg, will not be able to create videos."))
 
         ffmpeg_p = subprocess.Popen([ffmpeg_path, "-filters"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = ffmpeg_p.stdout.read()
+        output = ffmpeg_p.stdout.read().decode("utf-8")
         ffmpeg_p.communicate()
         if ffmpeg_p.returncode != 0:
-            print t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg.")
+            print(t.red("Incompatible ffmpeg version detected, please update to newest ffmpeg."))
             sys.exit(-4)
 
         if not("format" in output and "scale" in output and "palettegen" in output and "paletteuse" in output and "fps" in output):
-            print t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
-                  t.green("format, fps, scale, palettegen and paletteuse"), t.red("filters.")
+            print(t.red("Missing required filters in installed ffmpeg, installed ffmpeg requires"), \
+                  t.green("format, fps, scale, palettegen and paletteuse"), t.red("filters."))
             sys.exit(-4)
     except OSError:
-        print t.red("This program requires a newish ffmpeg in path.")
+        print(t.red("This program requires a newish ffmpeg in path."))
         sys.exit(-4)
 
 
 def get_chosen_device(devices):
-    print t.green("Multiple devices found, choose one: ")
+    # This is a shim to support raw_input on Python 2.x and 3.x
+    global input
+    try: input = raw_input
+    except NameError: pass
+
+    print(t.green("Multiple devices found, choose one: "))
     num = 0
     entry_dict = {}
-    print t.normal + "==============="
+    print(t.normal + "===============")
     for device_id in devices:
-        print "{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"] if "model" in devices[device_id] else "(unknown)", device_id=device_id)
+        print("{t.green}[{num}] {t.white}{model} - {t.yellow}{device_id}".format(t=t, num=num, model=devices[device_id]["model"] if "model" in devices[device_id] else "(unknown)", device_id=device_id))
         entry_dict[num] = device_id
         num += 1
-    print t.normal + "==============="
+    print(t.normal + "===============")
     entry = -1
     while entry not in entry_dict:
-        inp = raw_input(t.green(" Choose[0-%d]: " % (num - 1, )))
+        inp = input(t.green(" Choose[0-%d]: " % (num - 1, )))
         try:
             entry = int(inp.strip())
         except ValueError:
             entry = -1
 
-    print t.normal
+    print(t.normal)
     return entry_dict[entry]
 
 
 def create_optimized_video(in_file, out_file, size, fps, video_quality):
-    print t.green("Optimizing video...")
+    print(t.green("Optimizing video..."))
 
     FFMPEG_FILTERS = "format=pix_fmts=yuv420p,fps={fps},scale=w='if(gt(iw,ih),-2,{size})':h='if(gt(iw,ih),{size},-2)':flags=lanczos".format(fps=fps, size=size)
     FFMPEG_CONVERT = ["ffmpeg", "-v", "warning", "-i", in_file, "-codec:v", "libx264", "-preset", "slow", "-crf", str(video_quality), "-vf", FFMPEG_FILTERS, "-y", "-f", "mp4", out_file]
 
     try:
         subprocess.check_call(FFMPEG_CONVERT)
-        print t.green("Done!")
+        print(t.green("Done!"))
     except:
-        print t.red("Could not optimize downloaded recording!")
+        print(t.red("Could not optimize downloaded recording!"))
         raise
 
-    print t.yellow("Created " + out_file)
+    print(t.yellow("Created " + out_file))
 
 
 def create_optimized_gif(in_file, out_file, size, fps):
-    print t.green("Converting video to GIF...")
+    print(t.green("Converting video to GIF..."))
     tmp_pal_file = get_new_temp_file_path("png")
     gifsicle_path = which("gifsicle")
 
@@ -118,9 +125,9 @@ def create_optimized_gif(in_file, out_file, size, fps):
         if gifsicle_path is not None:
             subprocess.check_call(GIFSICLE_OPTIMIZE)
 
-        print t.green("Done!")
+        print(t.green("Done!"))
     except:
-        print t.red("Could not convert downloaded recording to GIF!")
+        print(t.red("Could not convert downloaded recording to GIF!"))
         raise
     finally:
         try:
@@ -130,7 +137,7 @@ def create_optimized_gif(in_file, out_file, size, fps):
         except:
             pass
 
-    print t.yellow("Created " + out_file)
+    print(t.yellow("Created " + out_file))
 
 
 @click.command(options_metavar="[options]")
@@ -145,13 +152,13 @@ def run(filename=None, size=None, fps=None, video_quality=None):
     Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
     """
 
-    print "RoboGif Recorder v%s" % (VERSION,)
+    print("RoboGif Recorder v%s" % (VERSION,))
     check_requirements()
     output_video_mode = False
 
     if not (filename.lower().endswith(".mp4") or filename.lower().endswith(".gif")):
-        print "Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], )
-        print t.red("Filename must either end with"), t.green("mp4"), t.red("for video or"), t.green("gif"), t.red("for a GIF.")
+        print("Usage: %s [output filename].[mp4|gif]" % (sys.argv[0], ))
+        print(t.red("Filename must either end with"), t.green("mp4"), t.red("for video or"), t.green("gif"), t.red("for a GIF."))
         print
         sys.exit(-4)
 
@@ -168,15 +175,15 @@ def run(filename=None, size=None, fps=None, video_quality=None):
     device_id = None
     devices = get_devices()
     if len(devices) == 0:
-        print t.red("No adb devices found, connect one.")
+        print(t.red("No adb devices found, connect one."))
         sys.exit(-3)
     elif len(devices) == 1:
-        device_id = devices.keys()[0]
+        device_id = list(devices.keys())[0]
     else:
         device_id = get_chosen_device(devices)
 
-    print t.green("Starting recording on %s..." % (device_id, ))
-    print t.yellow("Press Ctrl+C to stop recording.")
+    print(t.green("Starting recording on %s..." % (device_id, )))
+    print(t.yellow("Press Ctrl+C to stop recording."))
 
     recorder = subprocess.Popen(["adb", "-s", device_id, "shell", "screenrecord", "--bit-rate", "8000000", "/sdcard/tmp_record.mp4"])
     try:
@@ -190,15 +197,15 @@ def run(filename=None, size=None, fps=None, video_quality=None):
         recorder.wait()
     except OSError:
         print
-        print t.red("Recording has failed, it's possible that your device does not support recording.")
-        print t.normal + "Recording is supported on devices running KitKat (4.4) or newer."
-        print t.normal + "Genymotion and stock emulator do not support it."
+        print(t.red("Recording has failed, it's possible that your device does not support recording."))
+        print(t.normal + "Recording is supported on devices running KitKat (4.4) or newer.")
+        print(t.normal + "Genymotion and stock emulator do not support it.")
         print
         sys.exit(-3)
     # We need to wait for MOOV item to be written
     time.sleep(2)
 
-    print t.green("Recording done, downloading file....")
+    print(t.green("Recording done, downloading file...."))
     tmp_video_file = get_new_temp_file_path("mp4")
 
     # Download file and cleanup
@@ -212,7 +219,7 @@ def run(filename=None, size=None, fps=None, video_quality=None):
             create_optimized_gif(tmp_video_file, filename, size, fps)
 
     except subprocess.CalledProcessError:
-        print t.red("Could not download recording from the device.")
+        print(t.red("Could not download recording from the device."))
         sys.exit(-1)
     finally:
         os.remove(tmp_video_file)
