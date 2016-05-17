@@ -150,12 +150,13 @@ def create_optimized_gif(in_file, out_file, size, fps):
 
 @click.command(options_metavar="[options]")
 @click.argument("filename", type=click.Path(exists=False, writable=True, resolve_path=True), metavar="<filename>.<gif|mp4>")
+@click.option('-i', '--input-file', type=str, help="Convert input mp4 file to optimized gif")
 @click.option('-s', '--size', type=int, default=480, help="Size of the shortest side of the output gif/video. Defaults to 480.")
 @click.option('-f', '--fps', type=int, help="Framerate of the output gif/video. Defaults to 15 for GIF and 60 for MP4.")
 @click.option('-vq', '--video-quality', type=int, default=24, help="Video quality of the output video - the value is x264 CRF. Default is 24, lower number means better quality.")
 @click.help_option()
 @click.version_option(version=VERSION, prog_name="RoboGif")
-def run(filename=None, size=None, fps=None, video_quality=None):
+def run(filename=None, input_file=None, size=None, fps=None, video_quality=None):
     """
     Records Android device screen to an optimized GIF or MP4 file. The type of the output is chosen depending on the file extension.
     """
@@ -178,6 +179,15 @@ def run(filename=None, size=None, fps=None, video_quality=None):
             fps = 60
         else:
             fps = 15
+
+    # Convert file if input is passed
+    if input_file is not None:
+        if output_video_mode:
+            print(t.red("There's no point in converting video to video!"))
+            sys.exit(-4)
+
+        create_optimized_gif(input_file, filename, size, fps)
+        sys.exit(0)
 
     # Show device chooser if more than one device is selected
     device_id = None
