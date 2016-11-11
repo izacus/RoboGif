@@ -76,3 +76,13 @@ Optimizing video...
 Done!
 Created demo.mp4
 ```
+
+### Connecting devices
+
+`robogif` requires `adb` for accessing Android devices. Before recording a GIF or video, you need to connect the target device to your computer using an USB cable. The device must have "USB debugging" enabled. You can check if the device is properly connected by running `adb device` from your terminal. If your device shows up, you are ready to go.
+
+```bash 
+> adb devices -l
+List of devices attached
+CVH7N25B12003553       device usb:346594891X product:angler model:Nexus_6P device:angler
+```
