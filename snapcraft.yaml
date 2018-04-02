@@ -52,6 +52,14 @@ parts:
     prime:
       - bin/ffmpeg
 
+  gifsicle:
+    source: https://github.com/kohler/gifsicle.git
+    source-type: git
+    source-branch: v1.91
+    plugin: autotools
+    prime:
+      - bin/gifsicle
+
   x264:
     source: git://git.videolan.org/x264.git
     source-type: git
