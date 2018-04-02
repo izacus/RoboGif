@@ -1,0 +1,76 @@
+name: robogif
+version: 1.3.0
+summary: RoboGif - Simple Android screen recorder
+description: RoboGif allows you to simply record the screen of your 4.4+ Android device and then convert the recording to high-quality GIF or video.\n Requires adb and ffmpeg to be installed on the system.
+type: app
+grade: stable
+
+apps:
+  robogif:
+    command: bin/robogif
+
+parts:
+  robogif:
+    plugin: python
+    python-version: python2
+    stage-packages:
+      - android-tools-adb
+    source: .
+
+  ffmpeg:
+    source: git://source.ffmpeg.org/ffmpeg.git
+    source-type: git
+    source-branch: release/3.4
+    install-via: prefix
+    plugin: autotools
+    after: [x264]
+    build-packages:
+      - yasm
+      - pkg-config
+    configflags:
+      - --disable-everything
+      - --disable-programs
+      - --disable-hwaccels
+      - --disable-shared
+      - --enable-ffmpeg
+      - --enable-static
+      - --enable-gpl
+      - --enable-libx264
+      - --enable-muxer=mp4
+      - --enable-muxer=gif
+      - --enable-demuxer=mov
+      - --enable-decoder=h264
+      - --enable-filter=scale
+      - --enable-filter=palettegen
+      - --enable-filter=paletteuse
+      - --enable-filter=format
+      - --enable-filter=fps
+      - --enable-encoder=gif
+      - --enable-encoder=libx264
+      - --pkg-config-flags="--static"
+      - --extra-ldexeflags="-static"
+    prime:
+      - bin/ffmpeg
+
+  x264:
+    source: git://git.videolan.org/x264.git
+    source-type: git
+    source-branch: stable
+    plugin: autotools
+    build-packages:
+      - pkg-config
+    after: [nasm]
+    configflags: [--disable-cli,--disable-shared,--enable-static,--enable-strip]
+    prime:
+      - -*
+
+  nasm:
+    source: https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2
+    source-type: tar
+    install-via: prefix
+    plugin: autotools
+    prime:
+      - -*
+    
+      
+

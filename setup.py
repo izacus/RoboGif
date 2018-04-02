@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from robogif.version import VERSION
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='robogif',
       version=VERSION,
