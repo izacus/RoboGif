@@ -1,6 +1,6 @@
 # RoboGif
 
-A small utility to record Android device screen to an optimized GIF so you can paste it to GitHub or a simillar service.
+A small utility to record Android device screen to an optimized GIF so you can paste it to GitHub or a similar service.
 
 ## Requirements
 
