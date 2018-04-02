@@ -4,6 +4,7 @@ summary: RoboGif - Simple Android screen recorder
 description: RoboGif allows you to simply record the screen of your 4.4+ Android device and then convert the recording to high-quality GIF or video.\n Requires adb and ffmpeg to be installed on the system.
 type: app
 grade: stable
+confinement: classic
 
 apps:
   robogif:
