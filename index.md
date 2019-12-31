@@ -18,13 +18,11 @@ brew install ffmpeg
 
 ##### Linux
 
-On Ubuntu 15.04 or equivalent, you can just use `apt`:
+On Ubuntu 18.04 or equivalent, you can just use `apt`:
 
 ```
 apt-get install ffmpeg
 ```
-
-On Ubuntu 14.04 you can use [Ubuntu Multimedia for Trusty PPA](https://launchpad.net/~mc3man/+archive/ubuntu/trusty-media) to get new ffmpeg.
  
 ##### Windows
  
