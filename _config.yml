@@ -1,0 +1,8 @@
+title: Robogif
+description: A small utility to record Android device screen to a GIF
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
