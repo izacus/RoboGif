@@ -20,7 +20,7 @@ brew install ffmpeg
 
 ##### Linux
 
-On Ubuntu 18.04 or equivalent, you can just use `apt`:
+On Ubuntu 24.04 or equivalent, you can just use `apt`:
 
 ```
 apt-get install ffmpeg
