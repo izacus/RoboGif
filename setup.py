@@ -11,7 +11,7 @@ setup(name='robogif',
       license="Apache",
       author_email='jernej@virag.si',
       packages=['robogif'],
-      install_requires=['blessings==1.6', 'Click==4.1.0'],
+      install_requires=['Click==8.2.1'],
       entry_points='''
         [console_scripts]
         robogif=robogif.recorder:run

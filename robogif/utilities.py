@@ -20,6 +20,8 @@ def which(program):
 
     return None
 
+def is_win():
+    return os.name == 'nt'
 
 def get_new_temp_file_path(extension):
     tmp_dir = tempfile._get_default_tempdir()

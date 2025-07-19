@@ -1,5 +1,13 @@
 import subprocess
 
+from .utilities import is_win
+
+def adb_bin():
+    if is_win:
+        return "adb.exe"
+    else:
+        return "adb"
+
 # Commands regarding ADB
 def get_devices():
     devices = {}
